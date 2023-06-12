@@ -1,8 +1,4 @@
-use crossterm::{
-    execute, style,
-    terminal::{Clear, ClearType},
-};
-use std::io::{self, stdout};
+use std::io;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::game_data::{GameData, GameState};
@@ -10,12 +6,16 @@ pub mod game_data;
 
 fn main() {
     let mut game_data = GameData::init();
+    game_data.set_random_word();
     println!("Welcome to Hangman");
+
+    /*
     println!("Please enter the word that will be guessed");
     let mut scaned = false;
     while !scaned {
         scaned = game_data.scan_word();
     }
+    */
     println!(
         "Lets begin!!\nThe word has {} letters",
         game_data.get_word_len()
@@ -47,8 +47,14 @@ fn game_loop(game_data: &mut GameData) {
 
     match game_data.get_state() {
         GameState::InGame => game_loop(game_data),
-        GameState::GameWon => println!("You Won"),
-        GameState::GameOver => println!("Gameover, you lost"),
+        GameState::GameWon => {
+            println!("You Won");
+            println!("The word was: {}", game_data.get_word())
+        }
+        GameState::GameOver => {
+            println!("Gameover, you lost");
+            println!("The word was: {}", game_data.get_word())
+        }
     }
 }
 

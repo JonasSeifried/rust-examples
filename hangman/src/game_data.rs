@@ -1,5 +1,7 @@
+use rand::Rng;
 use std::collections::HashMap;
-use std::io;
+use std::fs::File;
+use std::io::{self, BufRead, BufReader};
 use unicode_segmentation::UnicodeSegmentation;
 
 pub enum GameState {
@@ -59,7 +61,18 @@ impl GameData {
         1
     }
 
+    fn clear(&mut self) {
+        self.word_ans.clear();
+        self.word_len = 0;
+        self.map_guessed.clear();
+        self.vec_wrongly_guessed.clear();
+        self.guessed_count = 0;
+        self.wrongly_guessed_count = 0;
+        self.game_state = GameState::InGame;
+    }
+
     pub fn scan_word(&mut self) -> bool {
+        self.clear();
         let bytes_read = io::stdin()
             .read_line(&mut self.word_ans)
             .expect("Failed to read Word");
@@ -74,6 +87,31 @@ impl GameData {
             }
         });
         true
+    }
+
+    pub fn set_random_word(&mut self) {
+        self.clear();
+        let file = File::open("src/english-nouns.txt").expect("Could not find File");
+        let lines: Vec<String> = BufReader::new(file)
+            .lines()
+            .map(|l| l.unwrap_or("".to_string()))
+            .filter(|w| !w.eq(""))
+            .collect();
+
+        let mut rng = rand::thread_rng();
+        let random_index = rng.gen_range(0..lines.len());
+
+        self.word_ans = lines
+            .get(random_index)
+            .expect("Error reading random word")
+            .trim()
+            .to_string();
+        self.word_ans.graphemes(true).for_each(|g| {
+            self.word_len += 1;
+            if !self.map_guessed.contains_key(g) {
+                self.map_guessed.insert(g.to_string(), false);
+            }
+        });
     }
 
     pub fn word_to_string(&self) -> String {
@@ -127,6 +165,9 @@ impl GameData {
         output
     }
 
+    pub fn get_word(&self) -> String {
+        self.word_ans.to_string()
+    }
     pub fn get_word_len(&self) -> usize {
         self.word_len
     }
