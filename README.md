@@ -5,3 +5,5 @@ A Collections of small Rust projects I build to learn Rust
 
 [pwgen](./pwgen) - A CLI password generator
 
+[calculator](./calculator) - A CLI calculator shell
+
